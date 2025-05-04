@@ -24,41 +24,29 @@ interface ZeldaTileProps {
 }
 
 // Map of tile coordinates in the tileset image (x, y position in units of 16x16 pixels)
-const TILESET_COORDINATES: Record<ZeldaTileType, Record<ZeldaTileVariant, [number, number]>> = {
+const TILESET_COORDINATES: Record<ZeldaTileType, Partial<Record<ZeldaTileVariant, [number, number]>>> = {
   cliff: {
     'full': [6.06, 6.687],
     'top-left-diagonal': [7.06, 6.687],
     'top-right-diagonal': [5.06, 6.687],
-    'bottom-left-diagonal': [5.06, 6.687],
+    'bottom-left-diagonal': [5.06, 6.687], // Using same coordinates as top-right
     'bottom-right-diagonal': [7.06, 6.687]
   },
   sand: {
-    'full': [1.06, 1.687],
-    'top-left-diagonal': [1.06, 1.687],
-    'top-right-diagonal': [1.06, 1.687],
-    'bottom-left-diagonal': [1.06, 1.687],
-    'bottom-right-diagonal': [1.06, 1.687]
+    'full': [1.06, 1.687]
+    // Sand only has 'full' variant
   },
   cave: {
-    'full': [0.06, 0.687],
-    'top-left-diagonal': [0.06, 0.687],
-    'top-right-diagonal': [0.06, 0.687],
-    'bottom-left-diagonal': [0.06, 0.687],
-    'bottom-right-diagonal': [0.06, 0.687]
+    'full': [0.06, 2.687]
+    // Cave only has 'full' variant
   },
   water: {
-    'full': [0.06, 0.687],
-    'top-left-diagonal': [0.06, 0.687],
-    'top-right-diagonal': [0.06, 0.687],
-    'bottom-left-diagonal': [0.06, 0.687],
-    'bottom-right-diagonal': [0.06, 0.687]
+    'full': [1.06, 1.687]
+    // Water only has 'full' variant
   },
   tree: {
-    'full': [10, 0],
-    'top-left-diagonal': [10, 0],
-    'top-right-diagonal': [10, 0],
-    'bottom-left-diagonal': [10, 0],
-    'bottom-right-diagonal': [10, 0]
+    'full': [10, 0]
+    // Tree only has 'full' variant
   }
 };
 
@@ -103,6 +91,47 @@ const SPECIAL_TILES: Record<string, (ctx: CanvasRenderingContext2D, image: HTMLI
       ctx.fillStyle = '#f8d870'; // Default sand color
       ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
     }
+  },
+  
+  // Water uses only the bottom right quadrant and expands it to fill the entire tile
+  'water-full': (ctx, image, tileX, tileY) => {
+    // From the original image, get a sample point to determine the color
+    const sampleX = Math.floor(tileX * ORIGINAL_TILE_SIZE + ORIGINAL_TILE_SIZE * 0.75); // Sample from center of right half
+    const sampleY = Math.floor(tileY * ORIGINAL_TILE_SIZE + ORIGINAL_TILE_SIZE * 0.75); // Sample from center of bottom half
+    
+    // Create a temporary canvas to sample the color
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = image.width;
+    tempCanvas.height = image.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) return;
+    
+    // Draw the image to the temp canvas
+    tempCtx.drawImage(image, 0, 0);
+    
+    // Get the color data at the sample point
+    try {
+      const pixelData = tempCtx.getImageData(sampleX, sampleY, 1, 1).data;
+      const color = `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
+      
+      // Fill the entire tile with this color - water blue
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+      
+      // Draw a few horizontal wave lines
+      for (let y = 4; y < TILE_SIZE; y += 8) {
+        for (let x = 0; x < TILE_SIZE; x += 4) {
+          // Skip some pixels to create a broken line effect
+          if (Math.random() > 0.7) {
+            ctx.fillRect(x, y, 2, 1);
+          }
+        }
+      }
+    } catch {
+      // If we can't get the color data, fall back to a default water color
+      ctx.fillStyle = '#0099ff'; // Default water color
+      ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+    }
   }
 };
 
@@ -128,22 +157,25 @@ const ZeldaTile: React.FC<ZeldaTileProps> = ({
     tilesetImage.src = '/NES - The Legend of Zelda - Overworld Tileset.png';
     
     tilesetImage.onload = () => {
+      // Check if requested variant exists for this tile type, fallback to 'full' if not
+      const effectiveVariant = TILESET_COORDINATES[tileType][variant] ? variant : 'full';
+      
       // Get the coordinates for the requested tile
-      const [tileX, tileY] = TILESET_COORDINATES[tileType][variant];
+      const [tileX, tileY] = TILESET_COORDINATES[tileType][effectiveVariant] as [number, number];
       
       // Check if this is a special tile that needs custom rendering
-      const specialKey = `${tileType}-${variant}`;
+      const specialKey = `${tileType}-${effectiveVariant}`;
       if (SPECIAL_TILES[specialKey]) {
         SPECIAL_TILES[specialKey](ctx, tilesetImage, tileX, tileY);
         return;
       }
       
       // Check if this variant needs rotation
-      const rotation = ROTATED_VARIANTS[variant];
+      const rotation = ROTATED_VARIANTS[effectiveVariant];
       
       // Trim amount (only from bottom and right)
-      const trimRight = .2;
-      const trimBottom = .2;
+      const trimRight = 0.2;
+      const trimBottom = 0.2;
       
       if (rotation) {
         // If we need to rotate, we'll need to adjust our drawing approach
