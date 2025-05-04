@@ -106,38 +106,6 @@ const SPECIAL_TILES: Record<string, (ctx: CanvasRenderingContext2D, image: HTMLI
   }
 };
 
-// Function to trim tile edges
-function drawTrimmedTile(
-  ctx: CanvasRenderingContext2D, 
-  image: HTMLImageElement, 
-  srcX: number, 
-  srcY: number,
-  trimAmount: number = 1 // Number of pixels to trim from each edge
-) {
-  // Original source area
-  const srcWidth = ORIGINAL_TILE_SIZE;
-  const srcHeight = ORIGINAL_TILE_SIZE;
-  
-  // Calculate trimmed source area
-  const trimmedSrcX = srcX + trimAmount;
-  const trimmedSrcY = srcY + trimAmount;
-  const trimmedSrcWidth = srcWidth - (trimAmount * 2);
-  const trimmedSrcHeight = srcHeight - (trimAmount * 2);
-  
-  // Draw the trimmed tile
-  ctx.drawImage(
-    image,
-    trimmedSrcX,
-    trimmedSrcY,
-    trimmedSrcWidth,
-    trimmedSrcHeight,
-    0, // Start at the top-left of our canvas
-    0,
-    TILE_SIZE, // Scale to fill the entire tile
-    TILE_SIZE
-  );
-}
-
 const ZeldaTile: React.FC<ZeldaTileProps> = ({ 
   tileType, 
   variant = 'full',
@@ -163,10 +131,6 @@ const ZeldaTile: React.FC<ZeldaTileProps> = ({
       // Get the coordinates for the requested tile
       const [tileX, tileY] = TILESET_COORDINATES[tileType][variant];
       
-      // Calculate the exact pixel position in the tileset
-      const srcX = Math.floor(tileX * ORIGINAL_TILE_SIZE);
-      const srcY = Math.floor(tileY * ORIGINAL_TILE_SIZE);
-      
       // Check if this is a special tile that needs custom rendering
       const specialKey = `${tileType}-${variant}`;
       if (SPECIAL_TILES[specialKey]) {
@@ -177,6 +141,10 @@ const ZeldaTile: React.FC<ZeldaTileProps> = ({
       // Check if this variant needs rotation
       const rotation = ROTATED_VARIANTS[variant];
       
+      // Trim amount (only from bottom and right)
+      const trimRight = .2;
+      const trimBottom = .2;
+      
       if (rotation) {
         // If we need to rotate, we'll need to adjust our drawing approach
         ctx.save();
@@ -186,13 +154,33 @@ const ZeldaTile: React.FC<ZeldaTileProps> = ({
         ctx.rotate((rotation * Math.PI) / 180);
         ctx.translate(-TILE_SIZE / 2, -TILE_SIZE / 2);
         
-        // Draw the rotated tile with trimmed edges
-        drawTrimmedTile(ctx, tilesetImage, srcX, srcY, 1);
+        // Draw the rotated tile with trimmed bottom and right edges
+        ctx.drawImage(
+          tilesetImage,
+          tileX * ORIGINAL_TILE_SIZE,
+          tileY * ORIGINAL_TILE_SIZE,
+          ORIGINAL_TILE_SIZE - trimRight,
+          ORIGINAL_TILE_SIZE - trimBottom,
+          0,
+          0,
+          TILE_SIZE,
+          TILE_SIZE
+        );
         
         ctx.restore();
       } else {
-        // Draw normal (unrotated) tile with trimmed edges
-        drawTrimmedTile(ctx, tilesetImage, srcX, srcY, 1);
+        // Draw normal (unrotated) tile with trimmed bottom and right edges
+        ctx.drawImage(
+          tilesetImage,
+          tileX * ORIGINAL_TILE_SIZE,
+          tileY * ORIGINAL_TILE_SIZE,
+          ORIGINAL_TILE_SIZE - trimRight,
+          ORIGINAL_TILE_SIZE - trimBottom,
+          0,
+          0,
+          TILE_SIZE,
+          TILE_SIZE
+        );
       }
     };
   }, [tileType, variant]);
