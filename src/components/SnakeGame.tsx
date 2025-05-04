@@ -70,8 +70,15 @@ export default function SnakeGame() {
     return () => clearInterval(interval);
   }, [gameOver]);
 
+  // Reset handler
+  const handleReset = () => {
+    setSnake([{ x: 10, y: 10 }]);
+    setDirection('RIGHT');
+    setGameOver(false);
+  };
+
   return (
-    <div className="w-96 h-96 bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
+    <div className="w-96 h-96 bg-white rounded-lg shadow-lg p-4 flex flex-col items-center justify-center relative">
       <div className="grid grid-cols-20 grid-rows-20 w-80 h-80">
         {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
           const x = index % GRID_SIZE;
@@ -89,8 +96,14 @@ export default function SnakeGame() {
         })}
       </div>
       {gameOver && (
-        <div className="absolute text-2xl font-bold text-red-600">Game Over</div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl font-bold text-red-600 pointer-events-none">Game Over</div>
       )}
+      <button
+        onClick={handleReset}
+        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      >
+        Reset
+      </button>
     </div>
   );
 } 
