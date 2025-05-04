@@ -1,35 +1,74 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const GRID_SIZE = 20;
-const CELL_SIZE = 20;
+
+const DIRECTIONS = {
+  UP: { x: 0, y: -1 },
+  DOWN: { x: 0, y: 1 },
+  LEFT: { x: -1, y: 0 },
+  RIGHT: { x: 1, y: 0 },
+};
 
 export default function SnakeGame() {
   const [snake, setSnake] = useState([{ x: 10, y: 10 }]);
-  const [direction, setDirection] = useState('RIGHT');
+  const [direction, setDirection] = useState<'UP' | 'DOWN' | 'LEFT' | 'RIGHT'>('RIGHT');
+  const [gameOver, setGameOver] = useState(false);
+  const directionRef = useRef<'UP' | 'DOWN' | 'LEFT' | 'RIGHT'>(direction);
 
+  // Keep directionRef in sync
+  useEffect(() => {
+    directionRef.current = direction;
+  }, [direction]);
+
+  // Handle keyboard input
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       switch (e.key) {
         case 'ArrowUp':
-          setDirection('UP');
+          if (directionRef.current !== 'DOWN') setDirection('UP');
           break;
         case 'ArrowDown':
-          setDirection('DOWN');
+          if (directionRef.current !== 'UP') setDirection('DOWN');
           break;
         case 'ArrowLeft':
-          setDirection('LEFT');
+          if (directionRef.current !== 'RIGHT') setDirection('LEFT');
           break;
         case 'ArrowRight':
-          setDirection('RIGHT');
+          if (directionRef.current !== 'LEFT') setDirection('RIGHT');
           break;
       }
     };
-
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
+
+  // Move the snake
+  useEffect(() => {
+    if (gameOver) return;
+    const interval = setInterval(() => {
+      setSnake(prevSnake => {
+        const newHead = {
+          x: prevSnake[0].x + DIRECTIONS[directionRef.current].x,
+          y: prevSnake[0].y + DIRECTIONS[directionRef.current].y,
+        };
+        // Check wall collision
+        if (
+          newHead.x < 0 ||
+          newHead.x >= GRID_SIZE ||
+          newHead.y < 0 ||
+          newHead.y >= GRID_SIZE
+        ) {
+          setGameOver(true);
+          return prevSnake;
+        }
+        // Move snake (no food yet, so just move head and remove tail)
+        return [newHead, ...prevSnake.slice(0, -1)];
+      });
+    }, 200);
+    return () => clearInterval(interval);
+  }, [gameOver]);
 
   return (
     <div className="w-96 h-96 bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
@@ -38,7 +77,6 @@ export default function SnakeGame() {
           const x = index % GRID_SIZE;
           const y = Math.floor(index / GRID_SIZE);
           const isSnake = snake.some(segment => segment.x === x && segment.y === y);
-          
           return (
             <div
               key={index}
@@ -50,6 +88,9 @@ export default function SnakeGame() {
           );
         })}
       </div>
+      {gameOver && (
+        <div className="absolute text-2xl font-bold text-red-600">Game Over</div>
+      )}
     </div>
   );
 } 
