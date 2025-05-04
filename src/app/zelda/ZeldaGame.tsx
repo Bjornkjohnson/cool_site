@@ -1,7 +1,10 @@
 'use client';
 import React, { useRef, useEffect } from 'react';
+import { drawCliffTile } from './components/tile/drawCliffTile';
+import { drawSandTile } from './components/tile/drawSandTile';
+import { drawCaveTile } from './components/tile/drawCaveTile';
+import { TILE_SIZE } from './components/tile/tileConstants';
 
-const TILE_SIZE = 32;
 const TILES_WIDE = 16;
 const HUD_TILES_TALL = 3;
 const PLAYFIELD_TILES_TALL = 11;
@@ -29,20 +32,6 @@ const playfieldTilemap = [
   [CLIFF, CLIFF, CLIFF, CLIFF, SAND, SAND, SAND, SAND, SAND, SAND, SAND, SAND, CLIFF, CLIFF, CLIFF, CLIFF],
 ];
 
-function drawCliffTile(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  // Base green
-  ctx.fillStyle = '#267a2b';
-  ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-  // Draw ovals for bushy texture
-  ctx.fillStyle = '#18551a';
-  ctx.beginPath();
-  ctx.ellipse(x + 8, y + 8, 7, 6, 0, 0, 2 * Math.PI);
-  ctx.ellipse(x + 24, y + 8, 7, 6, 0, 0, 2 * Math.PI);
-  ctx.ellipse(x + 8, y + 24, 7, 6, 0, 0, 2 * Math.PI);
-  ctx.ellipse(x + 24, y + 24, 7, 6, 0, 0, 2 * Math.PI);
-  ctx.fill();
-}
-
 export default function ZeldaGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -58,13 +47,13 @@ export default function ZeldaGame() {
     for (let y = 0; y < playfieldTilemap.length; y++) {
       for (let x = 0; x < playfieldTilemap[y].length; x++) {
         const drawY = (y + HUD_TILES_TALL) * TILE_SIZE;
-        if (playfieldTilemap[y][x] === CLIFF) {
+        const tile = playfieldTilemap[y][x];
+        if (tile === CLIFF) {
           drawCliffTile(ctx, x * TILE_SIZE, drawY);
-        } else {
-          let color = '#e9d8a6'; // sand
-          if (playfieldTilemap[y][x] === CAVE) color = '#111';
-          ctx.fillStyle = color;
-          ctx.fillRect(x * TILE_SIZE, drawY, TILE_SIZE, TILE_SIZE);
+        } else if (tile === SAND) {
+          drawSandTile(ctx, x * TILE_SIZE, drawY);
+        } else if (tile === CAVE) {
+          drawCaveTile(ctx, x * TILE_SIZE, drawY);
         }
       }
     }
