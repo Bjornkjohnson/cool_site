@@ -15,21 +15,54 @@ export function drawCliffTile(
 ) {
   // Helper to draw sand
   const drawSand = () => {
-    ctx.fillStyle = '#e9d8a6';
+    // Zelda-style sand/dirt color
+    ctx.fillStyle = '#f8d870';
     ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+    
+    // Add sand texture dots
+    ctx.fillStyle = '#d8b048';
+    const dotSpacing = TILE_SIZE / 8;
+    for (let i = 0; i < TILE_SIZE; i += dotSpacing) {
+      for (let j = 0; j < TILE_SIZE; j += dotSpacing) {
+        if ((i + j) % (dotSpacing * 2) === 0) {
+          ctx.fillRect(x + i, y + j, 1, 1);
+        }
+      }
+    }
   };
 
-  // Helper to draw cliff
+  // Helper to draw classic Zelda cliff
   const drawCliff = () => {
-    ctx.fillStyle = '#267a2b';
+    // Zelda cliff light green
+    ctx.fillStyle = '#40a040';
     ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-    ctx.fillStyle = '#18551a';
-    ctx.beginPath();
-    ctx.ellipse(x + 8, y + 8, 7, 6, 0, 0, 2 * Math.PI);
-    ctx.ellipse(x + 24, y + 8, 7, 6, 0, 0, 2 * Math.PI);
-    ctx.ellipse(x + 8, y + 24, 7, 6, 0, 0, 2 * Math.PI);
-    ctx.ellipse(x + 24, y + 24, 7, 6, 0, 0, 2 * Math.PI);
-    ctx.fill();
+    
+    // Draw the pixel pattern for cliff from the original Zelda tileset
+    const pixelSize = TILE_SIZE / 16; // 16x16 pixel grid
+    
+    // Draw darker green pattern
+    ctx.fillStyle = '#008000';
+    
+    // Top pattern (2 rows of darker green blocks)
+    for (let i = 0; i < 16; i += 2) {
+      ctx.fillRect(x + i * pixelSize, y, pixelSize, pixelSize * 2);
+    }
+    
+    // Middle horizontal lines
+    for (let j = 4; j < 16; j += 4) {
+      for (let i = 0; i < 16; i++) {
+        ctx.fillRect(x + i * pixelSize, y + j * pixelSize, pixelSize, pixelSize);
+      }
+    }
+    
+    // Darker green vertical blocks
+    for (let i = 0; i < 16; i += 4) {
+      for (let j = 2; j < 16; j += 2) {
+        if (j % 4 !== 0) { // Skip positions where horizontal lines are
+          ctx.fillRect(x + i * pixelSize, y + j * pixelSize, pixelSize, pixelSize);
+        }
+      }
+    }
   };
 
   if (variant === 'full') {
