@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useEffect, useRef } from 'react';
-import { drawCliffTile } from './drawCliffTile';
+import { drawCliffTile, CliffTileVariant } from './drawCliffTile';
 import { drawSandTile } from './drawSandTile';
 import { drawCaveTile } from './drawCaveTile';
 import { TILE_SIZE } from './tileConstants';
@@ -45,9 +45,17 @@ const TileCanvas = ({ drawTile }: { drawTile: (ctx: CanvasRenderingContext2D, x:
   );
 };
 
-export const CliffTile: Story = {
-  render: () => <TileCanvas drawTile={drawCliffTile} />,
-};
+function makeCliffTileStory(variant: CliffTileVariant) {
+  return {
+    render: () => <TileCanvas drawTile={(ctx, x, y) => drawCliffTile(ctx, x, y, variant)} />,
+  };
+}
+
+export const CliffTileFull: Story = makeCliffTileStory('full');
+export const CliffTileTopLeftDiagonal: Story = makeCliffTileStory('top-left-diagonal');
+export const CliffTileTopRightDiagonal: Story = makeCliffTileStory('top-right-diagonal');
+export const CliffTileBottomLeftDiagonal: Story = makeCliffTileStory('bottom-left-diagonal');
+export const CliffTileBottomRightDiagonal: Story = makeCliffTileStory('bottom-right-diagonal');
 
 export const SandTile: Story = {
   render: () => <TileCanvas drawTile={drawSandTile} />,
