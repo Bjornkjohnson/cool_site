@@ -46,8 +46,8 @@ const TILESET_COORDINATES: Record<ZeldaTileType, Partial<Record<ZeldaTileVariant
   cliff: {
     'full': [6.06, 6.687],
     'top-left-diagonal': [7.06, 6.687],
-    'top-right-diagonal': [5.06, 6.687],
-    'bottom-left-diagonal': [5.06, 6.687], // Using same coordinates as top-right
+    'top-right-diagonal': [5.29, 6.687],
+    'bottom-left-diagonal': [5.29, 6.687], // Using same coordinates as top-right
     'bottom-right-diagonal': [7.06, 6.687]
   },
   sand: {
