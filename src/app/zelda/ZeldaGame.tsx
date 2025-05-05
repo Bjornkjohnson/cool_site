@@ -78,6 +78,7 @@ export default function ZeldaGame() {
                 <ZeldaTile 
                   tileType={tile.type}
                   variant={tile.variant}
+                  colorScheme="green"
                 />
               </div>
             );

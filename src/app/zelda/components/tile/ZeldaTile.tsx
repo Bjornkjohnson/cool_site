@@ -17,10 +17,28 @@ export type ZeldaTileVariant =
   | 'bottom-left-diagonal'
   | 'bottom-right-diagonal';
 
+// Define color schemes
+export type ZeldaColorScheme = 
+  | 'gray'
+  | 'orange'
+  | 'green'
+  | 'orange-blue';
+
+// Map color schemes to offset coordinates
+const COLOR_SCHEME_OFFSETS: Record<ZeldaColorScheme, [number, number]> = {
+  'gray': [0, 0],
+  'orange': [8, 0],
+  'green': [16, 0],
+  'orange-blue': [24, 0]
+};
+
 interface ZeldaTileProps {
   tileType: ZeldaTileType;
   variant?: ZeldaTileVariant;
   scale?: number;
+  colorOffsetX?: number; // X offset for different color schemes
+  colorOffsetY?: number; // Y offset for different color schemes
+  colorScheme?: ZeldaColorScheme; // Named color scheme (overrides colorOffsetX/Y if provided)
 }
 
 // Map of tile coordinates in the tileset image (x, y position in units of 16x16 pixels)
@@ -138,7 +156,10 @@ const SPECIAL_TILES: Record<string, (ctx: CanvasRenderingContext2D, image: HTMLI
 const ZeldaTile: React.FC<ZeldaTileProps> = ({ 
   tileType, 
   variant = 'full',
-  scale = 1 
+  scale = 1,
+  colorOffsetX = 0,
+  colorOffsetY = 0,
+  colorScheme = 'gray'
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
@@ -163,10 +184,21 @@ const ZeldaTile: React.FC<ZeldaTileProps> = ({
       // Get the coordinates for the requested tile
       const [tileX, tileY] = TILESET_COORDINATES[tileType][effectiveVariant] as [number, number];
       
+      // Apply color scheme offset - prioritize named colorScheme if provided
+      let finalOffsetX = colorOffsetX;
+      let finalOffsetY = colorOffsetY;
+      
+      if (colorScheme) {
+        [finalOffsetX, finalOffsetY] = COLOR_SCHEME_OFFSETS[colorScheme];
+      }
+      
+      const offsetTileX = tileX + finalOffsetX;
+      const offsetTileY = tileY + finalOffsetY;
+      
       // Check if this is a special tile that needs custom rendering
       const specialKey = `${tileType}-${effectiveVariant}`;
       if (SPECIAL_TILES[specialKey]) {
-        SPECIAL_TILES[specialKey](ctx, tilesetImage, tileX, tileY);
+        SPECIAL_TILES[specialKey](ctx, tilesetImage, offsetTileX, offsetTileY);
         return;
       }
       
@@ -189,8 +221,8 @@ const ZeldaTile: React.FC<ZeldaTileProps> = ({
         // Draw the rotated tile with trimmed bottom and right edges
         ctx.drawImage(
           tilesetImage,
-          tileX * ORIGINAL_TILE_SIZE,
-          tileY * ORIGINAL_TILE_SIZE,
+          offsetTileX * ORIGINAL_TILE_SIZE,
+          offsetTileY * ORIGINAL_TILE_SIZE,
           ORIGINAL_TILE_SIZE - trimRight,
           ORIGINAL_TILE_SIZE - trimBottom,
           0,
@@ -204,8 +236,8 @@ const ZeldaTile: React.FC<ZeldaTileProps> = ({
         // Draw normal (unrotated) tile with trimmed bottom and right edges
         ctx.drawImage(
           tilesetImage,
-          tileX * ORIGINAL_TILE_SIZE,
-          tileY * ORIGINAL_TILE_SIZE,
+          offsetTileX * ORIGINAL_TILE_SIZE,
+          offsetTileY * ORIGINAL_TILE_SIZE,
           ORIGINAL_TILE_SIZE - trimRight,
           ORIGINAL_TILE_SIZE - trimBottom,
           0,
@@ -215,7 +247,7 @@ const ZeldaTile: React.FC<ZeldaTileProps> = ({
         );
       }
     };
-  }, [tileType, variant]);
+  }, [tileType, variant, colorOffsetX, colorOffsetY, colorScheme]);
   
   return (
     <canvas
