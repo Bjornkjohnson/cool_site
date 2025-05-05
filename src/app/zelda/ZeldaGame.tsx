@@ -9,6 +9,7 @@ const PLAYFIELD_TILES_TALL = 11;
 const TILES_TALL = HUD_TILES_TALL + PLAYFIELD_TILES_TALL; // 15
 const WIDTH = TILE_SIZE * TILES_WIDE;
 const HEIGHT = TILE_SIZE * TILES_TALL;
+const SCALE = 2; // Scale factor to double the size
 
 // Define tile types explicitly as objects with type and variant
 type Tile = {
@@ -45,8 +46,8 @@ export default function ZeldaGame() {
     <div className="flex items-center justify-center">
       <div
         style={{
-          width: WIDTH,
-          height: HEIGHT,
+          width: WIDTH * SCALE,
+          height: HEIGHT * SCALE,
           border: '4px solid #222',
           background: 'black',
           position: 'relative',
@@ -56,7 +57,7 @@ export default function ZeldaGame() {
         <div
           style={{
             width: '100%',
-            height: `${HUD_TILES_TALL * TILE_SIZE}px`,
+            height: `${HUD_TILES_TALL * TILE_SIZE * SCALE}px`,
             backgroundColor: 'black',
           }}
         />
@@ -71,14 +72,15 @@ export default function ZeldaGame() {
                 key={`${x}-${y}`} 
                 style={{ 
                   position: 'absolute',
-                  left: x * TILE_SIZE,
-                  top: (y + HUD_TILES_TALL) * TILE_SIZE
+                  left: x * TILE_SIZE * SCALE,
+                  top: (y + HUD_TILES_TALL) * TILE_SIZE * SCALE
                 }}
               >
                 <ZeldaTile 
                   tileType={tile.type}
                   variant={tile.variant}
                   colorScheme="green"
+                  scale={SCALE}
                 />
               </div>
             );
