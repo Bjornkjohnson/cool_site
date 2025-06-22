@@ -1,0 +1,54 @@
+{
+  "spriteWidth": 10,
+  "spriteHeight": 10,
+  "sprites": [
+    {
+      "name": "link-down-0",
+      "file": "link-down-0.png"
+    },
+    {
+      "name": "link-down-1",
+      "file": "link-down-1.png"
+    },
+    {
+      "name": "link-up-0",
+      "file": "link-up-0.png"
+    },
+    {
+      "name": "link-up-1",
+      "file": "link-up-1.png"
+    },
+    {
+      "name": "link-right-0",
+      "file": "link-right-0.png"
+    },
+    {
+      "name": "link-right-1",
+      "file": "link-right-1.png"
+    },
+    {
+      "name": "link-attack-down-0",
+      "file": "link-attack-down-0.png"
+    },
+    {
+      "name": "link-attack-down-1",
+      "file": "link-attack-down-1.png"
+    },
+    {
+      "name": "link-attack-up-0",
+      "file": "link-attack-up-0.png"
+    },
+    {
+      "name": "link-attack-up-1",
+      "file": "link-attack-up-1.png"
+    },
+    {
+      "name": "link-attack-right-0",
+      "file": "link-attack-right-0.png"
+    },
+    {
+      "name": "link-attack-right-1",
+      "file": "link-attack-right-1.png"
+    }
+  ]
+}
